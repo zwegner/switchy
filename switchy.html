@@ -1,0 +1,172 @@
+<body>
+<table id="grid"></table>
+</body>
+
+<style type="text/css">
+.white {background-color: #ffffff;}
+.black {background-color: #000000;}
+.grey {background-color: #bbbbbb;}
+.darkgrey {background-color: #444444;}
+.blue {background-color: #0000FF;}
+.red {background-color: #FF0000;}
+</style> 
+
+<script type="application/javascript;version=1.7">
+N = 15
+n = 3
+
+function reset_grid() {
+    collapse();
+    grid_cells = []
+    grid_div = document.getElementById("grid");
+    grid_div.setAttribute("onmouseout", "mouseout()");
+    grid_div.setAttribute("class", "blue");
+    remove_children(grid_div);
+    for (var r = 0; r < grid.length; r++) {
+        var row = [];
+        var row_div = document.createElement("tr");
+        row_div.setAttribute("id", "row");
+        _r = Math.min(r, grid.length - n);
+        for (var c = 0; c < grid[0].length; c++) {
+            var cell = document.createElement("td");
+            _c = Math.min(c, grid[0].length - n);
+            cell.setAttribute("onmouseover", "mouseover(" + _r + ", " + _c + ")");
+            cell.setAttribute("onmouseup", "mouseup(" + _r + ", " + _c + ")");
+            cell.setAttribute("id", "cell");
+            cell.setAttribute("class", get_cell_class(grid, r, c));
+            cell.setAttribute("height", 40);
+            cell.setAttribute("width", 40);
+            row_div.appendChild(cell);
+            row.push(cell);
+        }
+        grid_div.appendChild(row_div);
+        grid_cells.push(row);
+    }
+}
+
+function remove_children(node) {
+    while (node.hasChildNodes())
+        node.removeChild(node.lastChild);
+}
+[mouse_x, mouse_y] = [null, null];
+
+function mouseover(x, y) {
+    [mouse_x, mouse_y] = [x, y];
+    reset_grid();
+}
+
+function mouseup(x, y) {
+    flip_switches(x, y, n);
+    reset_grid();
+}
+
+function mouseout() {
+    [mouse_x, mouse_y] = [null, null];
+    reset_grid();
+}
+
+function get_cell_class(grid, x, y) {
+    if (removing_rows.contains(x) || removing_cols.contains(y))
+        return "red";
+    if (mouse_x !== null && mouse_y !== null &&
+            mouse_x <= x && x < mouse_x + n &&
+            mouse_y <= y && y < mouse_y + n)
+        return ["grey", "darkgrey"][grid[x][y]];
+    return ["white", "black"][grid[x][y]];
+}
+
+function *range(N) {
+    for (var i = 0; i < N; i++)
+        yield i;
+}
+
+function *enumerate(iter) {
+    for (var i = 0; i < iter.length; i++)
+        yield [i, iter[i]];
+}
+
+Array.prototype.contains = function(item) {
+    for (var i of this)
+        if (item == i)
+            return true;
+    return false;
+}
+
+function generate() {
+    return [[Math.random() * 2 | 0 for (i of range(N))] for (i of range(N))];
+}
+
+function flip_switches(x, y, n) {
+    grid = [[item ^ (x <= r && r < x + n && y <= c && c < y + n) for ([c, item] of enumerate(row))]
+        for ([r, row] of enumerate(grid))];
+}
+
+function len(grid) {
+    return grid.length;
+}
+
+function len_cols(grid) {
+    return grid.length && grid[0].length;
+}
+
+function extract_row(grid, r) {
+    return grid[r]
+}
+
+function extract_col(grid, c) {
+    return [row[c] for (row of grid)]
+}
+
+function remove_rows(grid, rows) {
+    return [row for ([r, row] of enumerate(grid)) if (!rows.contains(r))]
+}
+
+function remove_cols(grid, cols) {
+    return [[col for ([c, col] of enumerate(row)) if (!cols.contains(c))] for (row of grid)]
+}
+
+function n_uniques(list) {
+    var uniques = [];
+    for (i of list) {
+        if (!uniques.contains(i))
+            uniques.push(i);
+    }
+    return uniques.length;
+}
+
+removing_rows = [];
+removing_cols = [];
+state = 0
+function collapse() {
+    if (state !== 0)
+        return;
+    state = 1;
+    for ([length, extract, to_remove] of [[len, extract_row, removing_rows],
+        [len_cols, extract_col, removing_cols]]) {
+        for (var i of range(length(grid))) {
+            if (n_uniques(extract(grid, i)) <= 1)
+                to_remove.push(i);
+        }
+    }
+
+    if (grid.length && grid[0].length)// && (removing_rows.length || removing_cols.length))
+        setTimeout(clearout, 1000);
+}
+
+function clearout() {
+    if (state !== 1)
+        return;
+    state = 2;
+    grid = remove_rows(grid, removing_rows);
+    grid = remove_cols(grid, removing_cols);
+    while (removing_rows.length)
+        removing_rows.pop();
+    while (removing_cols.length)
+        removing_cols.pop();
+    state = 0;
+    reset_grid();
+}
+
+grid = generate();
+reset_grid();
+</script>
