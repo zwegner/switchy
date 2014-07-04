@@ -1,14 +1,33 @@
 <body>
-<table id="grid"></table>
+<div class="header">Switchy
+<div class="subheader">Click to switch the colors of a group of cells. Rows and columns that are all the same color are eliminated. Eliminate them all to win.</div>
+</div>
+<table id="grid" class="grid" onmouseout="mouseout()"></table>
 </body>
 
 <style type="text/css">
-.white {background-color: #ffffff;}
-.black {background-color: #000000;}
-.grey {background-color: #bbbbbb;}
-.darkgrey {background-color: #444444;}
-.blue {background-color: #0000FF;}
-.red {background-color: #FF0000;}
+.header {
+    font-family: Arial;
+    font-size: 60;
+    text-align: center;
+}
+.subheader {
+    font-size: 18;
+    margin: 0 auto;
+    margin-top: 20px;
+    width: 6in;
+}
+.grid {
+    margin: 0 auto;
+    margin-top: 100px;
+    padding: 20px;
+    background-color: #0000FF;
+}
+.white { background-color: #ffffff; }
+.black { background-color: #000000; }
+.grey { background-color: #aaaaaa; }
+.darkgrey { background-color: #555555; }
+.red { background-color: #FF0000; }
 </style> 
 
 <script type="application/javascript;version=1.7">
@@ -19,8 +38,6 @@ function reset_grid() {
     collapse();
     grid_cells = []
     grid_div = document.getElementById("grid");
-    grid_div.setAttribute("onmouseout", "mouseout()");
-    grid_div.setAttribute("class", "blue");
     remove_children(grid_div);
     for (var r = 0; r < grid.length; r++) {
         var row = [];
