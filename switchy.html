@@ -30,9 +30,32 @@
 .red { background-color: #FF0000; }
 </style> 
 
-<script type="application/javascript;version=1.7">
-N = 15
-n = 3
+<script>
+// Basic javascript stuff that I shouldn't have to write
+function *range(N) {
+    for (var i = 0; i < N; i++)
+        yield i;
+}
+
+function *enumerate(iter) {
+    for (var i = 0; i < iter.length; i++)
+        yield [i, iter[i]];
+}
+
+Array.prototype.contains = function(item) {
+    for (var i of this)
+        // Oh javascript, you're just so awful
+        if (item.toString() === i.toString())
+            return true;
+    return false;
+}
+
+// Game constants
+N = 10
+//squares = [[-1, 0], [0, -1], [0, 0], [0, 1], [1, 0]]
+squares = [[x, y] for (x of range(3)) for (y of range(3))]
+margin = [[minmax.apply(null, [sq[i] for (sq of squares)]) for (minmax of [Math.min, Math.max])]
+    for (i of range(2))]
 
 function reset_grid() {
     collapse();
@@ -42,14 +65,12 @@ function reset_grid() {
     for (var r = 0; r < grid.length; r++) {
         var row = [];
         var row_div = document.createElement("tr");
-        row_div.setAttribute("id", "row");
-        _r = Math.min(r, grid.length - n);
+        _r = Math.max(-margin[0][0], Math.min(r, grid.length - margin[0][1] - 1));
         for (var c = 0; c < grid[0].length; c++) {
             var cell = document.createElement("td");
-            _c = Math.min(c, grid[0].length - n);
+            _c = Math.max(-margin[1][0], Math.min(c, grid[0].length - margin[1][1] - 1));
             cell.setAttribute("onmouseover", "mouseover(" + _r + ", " + _c + ")");
             cell.setAttribute("onmouseup", "mouseup(" + _r + ", " + _c + ")");
-            cell.setAttribute("id", "cell");
             cell.setAttribute("class", get_cell_class(grid, r, c));
             cell.setAttribute("height", 40);
             cell.setAttribute("width", 40);
@@ -73,7 +94,7 @@ function mouseover(x, y) {
 }
 
 function mouseup(x, y) {
-    flip_switches(x, y, n);
+    flip_switches(x, y);
     reset_grid();
 }
 
@@ -86,35 +107,17 @@ function get_cell_class(grid, x, y) {
     if (removing_rows.contains(x) || removing_cols.contains(y))
         return "red";
     if (mouse_x !== null && mouse_y !== null &&
-            mouse_x <= x && x < mouse_x + n &&
-            mouse_y <= y && y < mouse_y + n)
+            squares.contains([x - mouse_x, y - mouse_y]))
         return ["grey", "darkgrey"][grid[x][y]];
     return ["white", "black"][grid[x][y]];
-}
-
-function *range(N) {
-    for (var i = 0; i < N; i++)
-        yield i;
-}
-
-function *enumerate(iter) {
-    for (var i = 0; i < iter.length; i++)
-        yield [i, iter[i]];
-}
-
-Array.prototype.contains = function(item) {
-    for (var i of this)
-        if (item == i)
-            return true;
-    return false;
 }
 
 function generate() {
     return [[Math.random() * 2 | 0 for (i of range(N))] for (i of range(N))];
 }
 
-function flip_switches(x, y, n) {
-    grid = [[item ^ (x <= r && r < x + n && y <= c && c < y + n) for ([c, item] of enumerate(row))]
+function flip_switches(x, y) {
+    grid = [[item ^ squares.contains([r - x, c - y]) for ([c, item] of enumerate(row))]
         for ([r, row] of enumerate(grid))];
 }
 
