@@ -54,10 +54,11 @@ Array.prototype.contains = function(item) {
 
 // Game constants
 var N = 10
-//squares = [[-1, 0], [0, -1], [0, 0], [0, 1], [1, 0]]
+//var squares = [[-1, 0], [0, -1], [0, 0], [0, 1], [1, 0]]
 var squares = [for (x of range(3)) for (y of range(3)) [x, y]]
-var margin = [for (minmax of [Math.min, Math.max])
-     [for (i of range(2)) minmax.apply(null, [for (sq of squares) sq[i]])]]
+var margin = [for (i of range(2))
+    [for (minmax of [Math.min, Math.max])
+        minmax.apply(null, [for (sq of squares) sq[i]])]]
 var [mouse_x, mouse_y] = [null, null];
 var removing_rows = [];
 var removing_cols = [];
