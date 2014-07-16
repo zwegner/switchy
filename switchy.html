@@ -53,9 +53,9 @@ Array.prototype.contains = function(item) {
 // Game constants
 N = 10
 //squares = [[-1, 0], [0, -1], [0, 0], [0, 1], [1, 0]]
-squares = [[x, y] for (x of range(3)) for (y of range(3))]
-margin = [[minmax.apply(null, [sq[i] for (sq of squares)]) for (minmax of [Math.min, Math.max])]
-    for (i of range(2))]
+squares = [for (x of range(3)) for (y of range(3)) [x, y]]
+margin = [for (minmax of [Math.min, Math.max]) for (i of range(2))
+    [minmax.apply(null, [for (sq of squares) sq[i]])]]
 
 function reset_grid() {
     collapse();
@@ -113,12 +113,13 @@ function get_cell_class(grid, x, y) {
 }
 
 function generate() {
-    return [[Math.random() * 2 | 0 for (i of range(N))] for (i of range(N))];
+    return [for (i of range(N)) [for (i of range(N)) Math.random() * 2 | 0]];
 }
 
 function flip_switches(x, y) {
-    grid = [[item ^ squares.contains([r - x, c - y]) for ([c, item] of enumerate(row))]
-        for ([r, row] of enumerate(grid))];
+    grid = [for ([r, row] of enumerate(grid))
+        [for ([c, item] of enumerate(row))
+        item ^ squares.contains([r - x, c - y])]];
 }
 
 function len(grid) {
@@ -134,15 +135,15 @@ function extract_row(grid, r) {
 }
 
 function extract_col(grid, c) {
-    return [row[c] for (row of grid)]
+    return [for (row of grid) row[c]]
 }
 
 function remove_rows(grid, rows) {
-    return [row for ([r, row] of enumerate(grid)) if (!rows.contains(r))]
+    return [for ([r, row] of enumerate(grid)) if (!rows.contains(r)) row]
 }
 
 function remove_cols(grid, cols) {
-    return [[col for ([c, col] of enumerate(row)) if (!cols.contains(c))] for (row of grid)]
+    return [for (row of grid) [for ([c, col] of enumerate(row)) if (!cols.contains(c)) col]]
 }
 
 function n_uniques(list) {
