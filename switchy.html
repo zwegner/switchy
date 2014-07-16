@@ -51,24 +51,29 @@ Array.prototype.contains = function(item) {
 }
 
 // Game constants
-N = 10
+var N = 10
 //squares = [[-1, 0], [0, -1], [0, 0], [0, 1], [1, 0]]
-squares = [for (x of range(3)) for (y of range(3)) [x, y]]
-margin = [for (minmax of [Math.min, Math.max]) for (i of range(2))
-    [minmax.apply(null, [for (sq of squares) sq[i]])]]
+var squares = [for (x of range(3)) for (y of range(3)) [x, y]]
+var margin = [for (minmax of [Math.min, Math.max])
+     [for (i of range(2)) minmax.apply(null, [for (sq of squares) sq[i]])]]
+var [mouse_x, mouse_y] = [null, null];
+var removing_rows = [];
+var removing_cols = [];
+var state = 0
+var grid = generate();
 
 function reset_grid() {
     collapse();
-    grid_cells = []
-    grid_div = document.getElementById("grid");
+    var grid_cells = [];
+    var grid_div = document.getElementById("grid");
     remove_children(grid_div);
     for (var r = 0; r < grid.length; r++) {
         var row = [];
         var row_div = document.createElement("tr");
-        _r = Math.max(-margin[0][0], Math.min(r, grid.length - margin[0][1] - 1));
+        var _r = Math.max(-margin[0][0], Math.min(r, grid.length - margin[0][1] - 1));
         for (var c = 0; c < grid[0].length; c++) {
             var cell = document.createElement("td");
-            _c = Math.max(-margin[1][0], Math.min(c, grid[0].length - margin[1][1] - 1));
+            var _c = Math.max(-margin[1][0], Math.min(c, grid[0].length - margin[1][1] - 1));
             cell.setAttribute("onmouseover", "mouseover(" + _r + ", " + _c + ")");
             cell.setAttribute("onmouseup", "mouseup(" + _r + ", " + _c + ")");
             cell.setAttribute("class", get_cell_class(grid, r, c));
@@ -86,7 +91,6 @@ function remove_children(node) {
     while (node.hasChildNodes())
         node.removeChild(node.lastChild);
 }
-[mouse_x, mouse_y] = [null, null];
 
 function mouseover(x, y) {
     [mouse_x, mouse_y] = [x, y];
@@ -102,6 +106,10 @@ function mouseout() {
     [mouse_x, mouse_y] = [null, null];
     reset_grid();
 }
+
+Reflect.global.mouseover = mouseover;
+Reflect.global.mouseout = mouseout;
+Reflect.global.mouseup = mouseup;
 
 function get_cell_class(grid, x, y) {
     if (removing_rows.contains(x) || removing_cols.contains(y))
@@ -148,20 +156,17 @@ function remove_cols(grid, cols) {
 
 function n_uniques(list) {
     var uniques = [];
-    for (i of list)
+    for (var i of list)
         if (!uniques.contains(i))
             uniques.push(i);
     return uniques.length;
 }
 
-removing_rows = [];
-removing_cols = [];
-state = 0
 function collapse() {
     if (state !== 0)
         return;
     state = 1;
-    for ([length, extract, to_remove] of [[len, extract_row, removing_rows],
+    for (var [length, extract, to_remove] of [[len, extract_row, removing_rows],
         [len_cols, extract_col, removing_cols]])
         for (var i of range(length(grid)))
             if (n_uniques(extract(grid, i)) <= 1)
@@ -175,7 +180,7 @@ function clearout() {
     if (state !== 1)
         return;
     state = 2;
-    for ([remove, to_remove] of [[remove_rows, removing_rows],
+    for (var [remove, to_remove] of [[remove_rows, removing_rows],
             [remove_cols, removing_cols]]) {
         grid = remove(grid, to_remove);
         while (to_remove.length)
@@ -185,6 +190,5 @@ function clearout() {
     reset_grid();
 }
 
-grid = generate();
 reset_grid();
 </script>
